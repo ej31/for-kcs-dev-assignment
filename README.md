@@ -1,90 +1,235 @@
-# 준비 작업
-## Github
-- 본 리포지토리를 본인 Github 계정에 포크떠서 개발을 진행해주시기 바랍니다.
-- 작업은 feature branch를 만들어 커밋을 해주시고, 해당 branch를 fork 하신 개인 repository에 push 해주시기 바랍니다.
-- **작업 완료 후 PR 주시고 최대한 의미 있는 작업 단위로 커밋을 해주시기 바랍니다.**
+# 주디 컴퍼니 과제
 
-## Tech Spec
-- 언어: 자바
-- 프레임워크: Springboot 3.x
-- 기타: 개발에 필요한 라이브러리 등은 자유롭게 선택하시어 `build.gradle`에 추가해주시면 됩니다.
+이력서 작성을 핑계로 사전 과제를 늦게 제출해서 죄송합니다 ㅠㅠ제프 정말 감사합니다
+아침에 열어주셔서 제프 정말 감사드립니다.
 
-## 구현 상세
-- 특정 기업의 주가(종가) 정보를 조회하여 응답을 주는 API 서버를 개발해주시기 바랍니다.
-- 해당 정보를 조회하기 위해 아래 테스트 데이터베이스에는 2개의 테이블이 있습니다.
-
-  ```
-  company
-  stocks_history
-  ```
-
-- `company`는 기업 정보를 저장한 테이블이며, `stocks_history`는 기업의 주식 정보를 저장한 테이블입니다.
-- 사용자는 **기업의 종목 코드** (`company` 테이블의 `company_code` 컬럼), 조회 **시작 날짜**와 **종료 날짜**(`stocks_history` 테이블의 `trade_date` 컬럼)로 API를 호출하게 됩니다.
-- `company` 테이블과 `stocks_history` 테이블의 join 컬럼은 `company_code` 컬럼입니다.
-
-- API 응답 값에는 아래 정보들이 포함되어야 합니다.
-  ```
-  * companyName
-    - type : String
-    - 관련 테이블 : `company` 테이블의 `company_name`
-
-  * tradeDate
-    - type : String
-    - format : yyyy-mm-dd
-    - 관련 테이블 : `stocks_history` 테이블의 `trade_date`
-
-  * closingPrice
-    - type : long
-    - 관련 테이블 : `stocks_history` 테이블의 `trade_price`
-  ```
-
-- 또한, 모든 API는 API 키가 쿼리 파라미터 혹은 헤더로 넘어왔을 때에만 응답을 반환해야 합니다.
-  - **헤더**에 API Key를 포함하는 경우 헤더 키 값은 `x-api-key`이며 **쿼리 파라미터**로 포함시킬 경우 파라미터의 키값은 `apikey`입니다.
-  - 만약 요청에 키가 없다고 판단 될 경우 `400`, 값이 아래 `API Key`가 아닌 경우, `403` 에러를 반환해주시기 바랍니다.
-  - 마찬가지로 Endopoint에서 필수 파라미터로 정의하신 파라미터가 오지 않을 경우 `400` 에러를 반환해주시면 되며, 존재하지 않는 API를 호출 할 경우, `404` 에러를 반환해주시기 바랍니다.
-
-- API 및 응답 포맷은 아래 추가 고려 사항을 고려하여 자유롭게 정의해주시기 바랍니다.
-
-### API key
-- `c18aa07f-f005-4c2f-b6db-dff8294e6b5e`
+기업과제는 5시간정도 소요되었고, 설계에 1시간 정도 사용했습니다. 처음으로 기업과제를 접해서 신기하기도하고.. 외부 DB 접속해서 분석하는것도 재미있었습니다.. (테이블 2개 뿐이지만 ㅎㅎ) 무엇보다 스스로 힘으로 해낸게 뿌듯합니다!
+앞으로는 설계 시간을 더 투자하고 개발시간을 단축하는 것을 목표로 다른 기업과제도 도전해보겠습니다!
 
 
-### DB 연결 정보
-- **(중요) max connection 갯수는 5 이하로 제한해주시기 바랍니다.**
+## 개요
+
+이 프로젝트는 다양한 기업의 주가(종가) 정보를 조회하고 표시하는 웹 애플리케이션입니다.
+<br>
+프론트엔드는 React와 Material-UI를 사용하여 구축되었으며,
+<br>
+백엔드는 Spring Boot를 사용하여 MySQL 데이터베이스와 연동됩니다.
+
+## 실행 화면
+
+### [- 주가정보조회 실행 영상 링크 (클릭)](https://www.notion.so/536175661cf044288070ed374a0a3fb8?pvs=4)
+### Company 조회
+![img_1.png](images/img_1.png)
+### 주가 정보 조회
+![img.png](images/img.png)
+
+## 목차
+
+- [사용된 기술](#사용된-기술)
+- [설치 방법](#설치-방법)
+- [백엔드 구조](#백엔드-구조)
+- [프론트엔드 구조](#프론트엔드-구조)
+- [API 엔드포인트](#api-엔드포인트)
+- [API 설계 철학](#api-설계-철학)
+- [트러블슈팅](#트러블슈팅)
+- [테스트](#테스트)
+
+## 사용된 기술
+
+- **프론트엔드** : React, Material-UI, Axios
+- **백엔드** : Spring Boot, Hibernate, MySQL
+- **데이터베이스** : MySQL - AWS 외부 DB 연결
+
+## 설치 방법
+
+### 백엔드
+
+1. **리포지토리 클론**
+    ```bash
+    git clone <repository-url>
+    cd backend
+    ```
+
+2. **`application.properties` 업데이트**
+<br>
+    `src/main/resources/application.properties` 파일을 열고 데이터베이스 자격 증명으로 업데이트합니다.
+
+```properties
+    spring.datasource.url=jdbc:mysql://<your-database-url>:3306/assignment
+    spring.datasource.username=<your-username>
+    spring.datasource.password=<your-password>
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.jpa.hibernate.ddl-auto=update
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.format_sql=true
+    spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+    spring.mvc.cors.allowed-origins=http://localhost:3000
+    spring.mvc.cors.allowed-methods=GET,POST,PUT,DELETE,OPTIONS
+    spring.mvc.cors.allowed-headers=*
+    spring.mvc.cors.allow-credentials=true
 ```
-host : dev-assignment.cjugioimm614.ap-northeast-2.rds.amazonaws.com
-port : 3306
-user : {별도제공}
-pw : {별도제공}
+
+4. **백엔드 빌드 및 실행**
+    ```bash
+    ./gradlew bootRun
+    ```
+
+### 프론트엔드
+
+1. **프론트엔드 디렉토리로 이동**
+    ```bash
+    cd ../frontend
+    ```
+
+2. **의존성 설치**
+    ```bash
+    npm install
+    ```
+
+3. **프론트엔드 시작**:
+    ```bash
+    npm start
+    ```
+
+## 백엔드 구조
+
+```plaintext
+backend/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── judycompany/
+│   │   │           └── assignment1/
+│   │   │               ├── Application.java
+│   │   │               ├── config/
+│   │   │               │   └── CorsConfig.java
+│   │   │               ├── v1/
+│   │   │               │   ├── controller/
+│   │   │               │   │   └── CompanyController.java
+│   │   │               │   │   └── StockController.java
+│   │   │               │   ├── model/
+│   │   │               │   │   ├── Company.java
+│   │   │               │   │   └── StockHistory.java
+│   │   │               │   ├── repository/
+│   │   │               │   │   ├── CompanyRepository.java
+│   │   │               │   │   └── StockRepository.java
+│   │   │               │   └── service/
+│   │   │               │       ├── StockService.java
+│   │   │               │       ├── QuotaService.java
+│   │   │               │       └── QuotaServiceImpl.java
+│   ├── resources/
+│   │   └── application.properties
+└── build.gradle
 ```
 
-- DB 및 ORM 관련 라이브러리(Hibernate, Jdbc 등)는 자유롭게 사용하셔도 됩니다.
+## 프론트엔드 구조
 
-## 추가 고려 사항
-### 필수: API 디자인
-- API는 사용자 와의 계약입니다.
-- 배포 된 OPEN API 서비스를 변경한다는 건 쉽지 않은 작업입니다.
-- 따라서 확장성 있고, 서비스 전체적으로 일관성 있는 API 및 파라미터 설계에 처음부터 많은 노력이 필요합니다.
-- 변경이 불가피하게 필요 할 경우를 대비하여 API 버저닝이 고려된 API를 설계해 주시기 바랍니다.
-- 가능하다면 API 설계에 대한 철학을 Readme.md 에 작성해 주시기 바랍니다. 또한 작성 된 철학을 어떻게 녹여냈는지 코드와 함께 설명하기 바랍니다.
+```plaintext
+frontend/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   └── StockHistory.js
+│   ├── App.js
+│   ├── App.css
+│   ├── index.js
+│   ├── index.css
+│   └── reportWebVitals.js
+├── package.json
+```
 
-### 필수: API 응답 값
-- 호출되는 API와 마찬가지로 배포되어 리얼 서비스가 시작 된 경우 API의 응답 값도 역시도 변경하기가 쉽지 않습니다.
-- 따라서 처음부터 일관성 있는 공통 응답 포맷에 대한 설계가 중요합니다.
-- 성공 및 실패 모두에 대한 일관성 있는 응답 값을 설계해 주시기 바랍니다.
-- 특정 응답 값을 설계한 이유를 코드에 주석으로 달아 주시기 바랍니다.)
+## API 엔드포인트
 
-### 옵션: Test Code 
-- API의 특성상 API를 사용자의 관점에서 접근할 필요가 있습니다. 
-- 스펙(설계)을 기반으로 테스트를 수행하고 이를 통해 기능뿐만 아니라 스펙에 대한 검증을 동시에 진행해야 합니다.
-- 구현한 API에 대해 단위 테스트와 통합 테스트를 구현해 주시기 바랍니다.
+### GET /api/v1/companies
 
-### 옵션: 응답 형식
-- 사용자에게 다앙햔 응답 포맷 옵션을 제공해 주는 것이 중요 할 수 있습니다.
-- API 호출 시, 확장자(예: `.json`, `.xml`)나 request parameter(예: `format=json`, `format=xml`)로 원하는 응답 방식을 제공해주면 좋습니다.
+- **설명**: 모든 회사 목록을 조회합니다.
+- **쿼리 파라미터**
+  - `apikey` (필수): API 키
+- **응답 예시**
+  ```json
+  [
+    {
+      "companyCode": "AAPL",
+      "companyName": "Apple Inc."
+    },
+    {
+      "companyCode": "GOOGL",
+      "companyName": "Alphabet Inc."
+    }
+  ]
+  ```
 
-### 옵션: API Throttling
-- 사용자가 너무 많은 요청을 보내게 되면 API 서버 전체가 불안정해질 수 있습니다.
-- 따라서 대부분의 오픈 API 서버는 1초에 N건, 혹은 1분에 N건 등 요청을 제한하는 Quota를 설정 할 수 있습니다.
-- 특정 API 키에 대한 호출을 10초에 10건으로 제한하는 Quota 기능을 구현해 주시기 바랍니다.
-- API 서버는 1대만 있다고 가정하고 서버의 메모리에 해당 기능을 구현하셔도 됩니다.
+### GET /api/v1/stocks/history
+
+- **설명**: 특정 회사의 주가(종가) 정보를 조회합니다.
+- **쿼리 파라미터**
+  - `companyCode` (필수): 회사 코드
+  - `startDate` (필수): 조회 시작 날짜 (yyyy-mm-dd)
+  - `endDate` (필수): 조회 종료 날짜 (yyyy-mm-dd)
+  - `apikey` (필수): API 키
+- **응답 예시**
+  ```json
+  [
+    {
+      "companyName": "Apple Inc.",
+      "tradeDate": "2024-01-02",
+      "closePrice": 150
+    },
+    {
+      "companyName": "Apple Inc.",
+      "tradeDate": "2024-01-03",
+      "closePrice": 152
+    }
+  ]
+  ```
+
+## API 설계 철학
+
+### 버저닝
+
+배포된 OPEN API 서비스를 변경하는 것은 쉽지 않은 작업이므로
+<br>확장 가능하고 일관성 있는 API 및 파라미터 설계에 노력했습니다.
+<br>또한 변경이 불가피하게 필요할 경우를 대비하여 API 버저닝을 고려하여 설계했습니다.
+- 현재 버전은 `/api/v1`로 명시되어 있고, 패키지를 분리하도록 설계했습니다.
+
+### 응답 형식
+
+API의 응답은 일관성 있고 확장 가능하도록 설계되었습니다.
+<br>
+성공 및 실패에 대한 일관성 있는 응답 포맷을 제공합니다.
+
+### API Throttling
+
+API 서버의 안정성을 위해 특정 API 키에 대한 호출을 10초에 10건으로 제한하는 Quota 기능을 구현했습니다.
+<br>API 서버가 과도한 요청으로 인해 불안정해지는 것을 방지합니다.
+
+## 트러블슈팅
+
+### 데이터베이스 연결 문제
+
+데이터베이스 연결 오류가 발생할 경우, `application.properties` 파일에서 데이터베이스 자격 증명이 올바른지 확인하십시오.
+
+### API 호출 제한 초과
+
+API 호출 제한을 초과한 경우 `429 Too Many Requests` 응답을 받게 됩니다. 이 경우 일정 시간 후 다시 시도하십시오.
+
+## 테스트
+
+테스트 코드는 API의 특성상 사용자의 관점에서 접근하여 스펙(설계)을 기반으로 테스트를 수행합니다.
+<br>기능뿐만 아니라 스펙에 대한 검증도 동시에 진행합니다.
+
+### 단위 테스트
+
+단위 테스트는 각 개별 컴포넌트의 기능을 검증합니다.
+
+### 통합 테스트
+
+통합 테스트는 여러 컴포넌트가 함께 동작하는 방식을 검증합니다.
+
+## 끝
+
+이 프로젝트에 대한 피드백이나 질문이 있다면 언제든지 연락해 주세요. 감사합니다!
+<br>
+주디 최고 제프 짱!
